@@ -1,8 +1,3 @@
-# ==============================================================
-# CodeFortune - AI-Powered Sustainability Platform
-# Optimizing Industrial Waste & Resources
-# Championship Edition - Code Manthan 25' - ENHANCED VERSION
-# ==============================================================
 
 import streamlit as st
 import pandas as pd
@@ -1096,8 +1091,9 @@ with tab6:
 st.markdown("---")
 st.markdown("""
     <div style='text-align: center; color: #666; margin-top: 40px;'>
-        <p><strong>CodeFortune</strong> - Championship Edition | Code Manthan 25' | AISA Hackathon</p>
+        <p><strong>CodeFortune</strong> - Code Manthan 25' | AISA Hackathon</p>
         <p>Enhanced with XGBoost, Gradient Boosting & Advanced ML Techniques</p>
         <p>Powered by Streamlit, Pandas, Scikit-Learn, XGBoost, and Plotly</p>
     </div>
 """, unsafe_allow_html=True)
+
