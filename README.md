@@ -7,11 +7,13 @@ AI-driven sustainability intelligence tool for industries and campuses. Visualiz
 
 Update installation and setup commands for codefortune:
 --------------------------------------------------------
-sudo apt update
-----------------
+>sudo apt update
+_________________________________________________________
 >sudo apt install python3 python3-pip python3-venv -y
-_____________________________
+>________________________________________________________
+
 >mkdir codefortune
+___________________________________________________________
 >cd codefortune
 >python3 -m venv env
 >source env/bin/activate
