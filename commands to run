@@ -8,3 +8,4 @@ nano requirements.txt [ enter the requirements.txt file]
 pip install -r requirements.txt #install
 nano codefortune.py
 streamlit run codefortune.py
+
