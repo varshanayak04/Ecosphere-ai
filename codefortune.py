@@ -3,6 +3,9 @@ st.set_page_config(page_title="Eco Sphere AI- ESG Intelligence", layout="wide", 
 
 import pandas as pd
 import numpy as np
+# --- Fix: use non-GUI backend for matplotlib on headless servers (Streamlit Cloud) ---
+import matplotlib
+matplotlib.use('Agg')   # must be set before importing matplotlib.pyplot
 import matplotlib.pyplot as plt
 import io, os, tempfile, traceback
 from datetime import datetime, date, timedelta
@@ -322,9 +325,8 @@ def calculate_kpis(df):
         kpis['emission_per_unit'] = 0.0
     return kpis
 
-# -------------------------------
-# GLOBAL: save_fig_to_file()
-# -------------------------------
+import tempfile, os, matplotlib.pyplot as plt
+
 def save_fig_to_file(fig, dpi=150):
     fd, path = tempfile.mkstemp(suffix=".png")
     os.close(fd)
@@ -341,68 +343,47 @@ def save_fig_to_file(fig, dpi=150):
             pass
     return path
 
-# -------------------------------
-# 1) train_regressors()
-# -------------------------------
-def train_regressors(X, y, use_xgb=HAS_XGB):
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+def train_regressors(X, y, use_xgb=True):
     """
-    Train regressors and return a dict of results (metrics + model + in-sample preds).
-    Returns:
-      results: {model_name: {'model':model,'preds':array,'cv_mae':..., 'r2':..., 'mae':..., 'rmse':..., 'mape':...}}
+    Safe trainer for RandomForest / GradientBoosting / XGBoost
+    Compatible with older/newer scikit-learn versions (no squared=False).
+    Returns dict with metrics and preds.
     """
     results = {}
-    try:
-        X_arr = X.values if hasattr(X, "values") else np.array(X)
-        y_arr = np.array(y)
+    X_arr = X.values if hasattr(X, "values") else np.array(X)
+    y_arr = np.array(y)
 
-        n = len(y_arr)
-        if n < 8:
-            st.warning(f"Warning: {n} samples — models may overfit or metrics may be unreliable.")
+    models = {}
+    models["RandomForest"] = RandomForestRegressor(n_estimators=200, max_depth=12, random_state=RANDOM_STATE, n_jobs=-1)
+    models["GradientBoosting"] = GradientBoostingRegressor(n_estimators=200, learning_rate=0.05, random_state=RANDOM_STATE)
+    if use_xgb and HAS_XGB:
+        models["XGBoost"] = XGBRegressor(n_estimators=300, max_depth=5, learning_rate=0.03,
+                                         subsample=0.9, colsample_bytree=0.9, random_state=RANDOM_STATE, verbosity=0)
 
+    for name, model in models.items():
         try:
-            n_splits = min(3, max(2, n // 5))
-            tscv = TimeSeriesSplit(n_splits=n_splits)
-        except Exception:
-            tscv = None
+            model.fit(X_arr, y_arr)
+            preds = model.predict(X_arr)
 
-        models = {}
-        models["RandomForest"] = RandomForestRegressor(n_estimators=200, max_depth=12, random_state=RANDOM_STATE, n_jobs=-1)
-        models["GradientBoosting"] = GradientBoostingRegressor(n_estimators=200, learning_rate=0.05, random_state=RANDOM_STATE)
-        if use_xgb and HAS_XGB:
-            models["XGBoost"] = XGBRegressor(n_estimators=300, max_depth=5, learning_rate=0.03,
-                                             subsample=0.9, colsample_bytree=0.9, random_state=RANDOM_STATE, verbosity=0)
+            mae = float(mean_absolute_error(y_arr, preds))
+            mse = float(mean_squared_error(y_arr, preds))
+            rmse = float(np.sqrt(mse))
+            mape = float(mean_absolute_percentage_error(y_arr, preds)) if len(y_arr) > 0 else None
+            r2 = float(r2_score(y_arr, preds)) if len(y_arr) > 0 else None
 
-        for name, model in models.items():
-            try:
-                cv_mae = None
-                if tscv is not None:
-                    try:
-                        scores = cross_val_score(model, X_arr, y_arr, cv=tscv, scoring="neg_mean_absolute_error", n_jobs=-1)
-                        cv_mae = float(np.mean(-scores))
-                    except Exception:
-                        cv_mae = None
-
-                model.fit(X_arr, y_arr)
-                preds = model.predict(X_arr)
-
-                results[name] = {
-                    "model": model,
-                    "preds": np.array(preds),
-                    "cv_mae": cv_mae,
-                    "r2": float(r2_score(y_arr, preds)) if len(y_arr) > 0 else None,
-                    "mae": float(mean_absolute_error(y_arr, preds)) if len(y_arr) > 0 else None,
-                    "rmse": float(mean_squared_error(y_arr, preds, squared=False)) if len(y_arr) > 0 else None,
-                    "mape": float(mean_absolute_percentage_error(y_arr, preds)) if len(y_arr) > 0 else None
-                }
-            except Exception as e:
-                st.warning(f"Training {name} failed: {e}")
-        return results
-
-    except Exception as e:
-        st.error(f"train_regressors fatal error: {e}")
-        st.exception(traceback.format_exc())
-        return {}
-
+            results[name] = {
+                "model": model,
+                "preds": np.array(preds),
+                "mae": mae,
+                "rmse": rmse,
+                "mape": mape,
+                "r2": r2
+            }
+        except Exception as e:
+            results[name] = {"error": str(e)}
+    return results
 # -------------------------------
 # Forecasting helper for ML
 # -------------------------------
@@ -1187,4 +1168,5 @@ with tab6:
             'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         st.json(export_summary)
+
 
