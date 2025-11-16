@@ -1,12 +1,3 @@
-# CodeFortune_ESG_App_streamlit_fixed_full.py
-"""
-Full final: Hardened & optimized single-file Streamlit app for CodeFortune ESG Intelligence.
-Includes:
- - Robust data loading & cleaning
- - train_regressors() training multiple models and producing forecasts
- - generate_professional_pdf_reportlab() (Option D) — custom order, no charts, no page breaks
- - Tabs 4/5/6 replaced to integrate ML forecast and PDF generation
-"""
 import streamlit as st
 st.set_page_config(page_title="Eco Sphere AI- ESG Intelligence", layout="wide", initial_sidebar_state="expanded")
 
@@ -1196,3 +1187,4 @@ with tab6:
             'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         st.json(export_summary)
+
