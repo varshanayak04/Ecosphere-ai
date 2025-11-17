@@ -1,19 +1,6 @@
-streamlit
-pandas
-numpy
-matplotlib
-scikit-learn
-xgboost
-prophet==1.1.2
-plotly
-openpyxl
-reportlab
-pyyaml
-tqdm
-click
+pip install xgboost prophet plotly
 
-
-
+pip install streamlit pandas numpy scikit-learn matplotlib reportlab
 
 
 
