@@ -31,18 +31,8 @@ nano requirements.txt
 ---------------------------------------------------
 #write the content in nano requirements.txt file
 ---------------------------------------------------
-streamlit==1.40.0
-pandas==2.2.0
-numpy==1.26.4
-matplotlib==3.8.4
-seaborn==0.13.2
-plotly==5.24.1
-scikit-learn==1.4.2
-xgboost==2.0.3
-joblib==1.4.2
-fpdf2==2.8.1
-openpyxl==3.1.5
-prophet==1.1.6
+pip install streamlit pandas numpy scikit-learn matplotlib reportlab
+pip install xgboost prophet plotly
 ----------------------------------------------------
 pip install -r requirements.txt # FOR Installation Requirements
 
